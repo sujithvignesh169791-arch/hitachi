@@ -57,12 +57,15 @@ async function request<T = any>(
             headers,
         });
 
-        const json = await res.json().catch(() => ({
-            success: false,
-            message: res.status === 504 || res.status === 502
-                ? 'Backend server is unreachable. Please ensure the backend is running on port 5000.'
-                : 'Invalid server response (not JSON)',
-        }));
+        const json = await res.json().catch((err) => {
+            console.error(`Failed to parse JSON from ${BASE_URL}${endpoint}. Response status:`, res.status);
+            return {
+                success: false,
+                message: res.status === 504 || res.status === 502
+                    ? 'Backend server is unreachable. Please ensure the backend is running on port 5000.'
+                    : 'Invalid server response (not JSON) from ' + BASE_URL + endpoint,
+            };
+        });
 
         if (!res.ok) {
             // If 401, try refreshing
